@@ -12,7 +12,7 @@ cs.connect(("127.0.0.1", 50001)) # connect to my computer (client)
 
 #Read file
 with open ('fileSend.txt', 'r') as inputFile:
-    fileTrans = inputFile.read(1024)
+    fileTrans = inputFile.read()
     cs.send(fileTrans.encode() )
     
 
