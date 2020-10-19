@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thur Sep 24 19:02:15 2020
-
 @author: joaquin
 """
 
@@ -13,72 +12,59 @@ sys.path.append("../framed-echo")
 import framedSock
 
 switchesVarDefaults = (
-    (('-s', '--server'), 'server', "127.0.0.1:50000"),
-    (('-d', 'debug'), "debug", False),
+    (('-s', '--server'), 'server', "127.0.0.1:50001"),
+    (('-d', '--debug'), "debug", False), # boolean (set if present)
     (('-?', '--usage'), "usage", False), # boolean (set if present)
     )
 
+
+progname = "framedClient"
 paramMap = params.parseParams(switchesVarDefaults)
-server, usage, debug = paramMap["server"],paramMap["usage"],paramMap["debug"]
+
+server, usage, debug  = paramMap["server"], paramMap["usage"], paramMap["debug"]
 
 if usage:
     params.usage()
-    
-#split/parse switchesVarDefaults
+
 try:
     serverHost, serverPort = re.split(":", server)
     serverPort = int(serverPort)
 except:
-    print('unable to parse "server" arg... exit')
+    print("Can't parse server:port from '%s'" % server)
     sys.exit(1)
-serverPortAddr = (serverHost, serverPort)
 
-#Obtain user input
-fileToSend = input('Enter the name of file you would like to send (or exit) ')
-fileToSend = fileToSend.strip()
+addrFamily = socket.AF_INET
+socktype = socket.SOCK_STREAM
+addrPort = (serverHost, serverPort)
 
-#Create Socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-if s is None:
-    print('Could not open socket... exit')
-    sys.exit(1)
-    
-s.connect(serverPortAddr)
+print('CLIENT\n')
 
 while True:
-    if fileToSend == 'exit':
-        print('exiting... goodbye')
-        framedSock.framedSend(s, "exit".encode(), debug)
+    
+    s = socket.socket(addrFamily, socktype)
+    if s is None:
+        print('could not open socket')
+        sys.exit(1)
+    s.connect(addrPort)
+    
+    #input
+    cmmdLine = input('Enter (exit) or file name: ')
+    
+    #Handle exit
+    if cmmdLine == 'exit':
+        print('exit, goodbye')
+        framedSock.framedSend(s, bytes('exit', encoding='utf-8'), debug) # send file name or 1st command
         sys.exit(0)
     
-    #Check if file exists
-    if os.path.exists(fileToSend):
-        print('\nPath exists: ', fileToSend)
-        #send file name
-        framedSock.framedSend(s, bytes(fileToSend, encoding='utf-8'), debug) 
-        
-        #Open file, begin to send bytes
-        with open(fileToSend, 'r') as contentPayload:
-            print('opening: ', fileToSend)
-            msg=contentPayload.read()
-            if len(msg) == 0:
-                print('empty File')
-                sys.exit(1)
-            
-            print('Beginning to send: ', fileToSend)
-            framedSock.framedSend(s, msg.encode(), debug)
-            
-        print('\nFrom Server: done writing to, ', framedSock.framedReceive(s, debug).decode(), '\n' )  
-        print('closing system')
-        s.close()
+    #Send file name
+    print('sending to server: ', cmmdLine)
+    framedSock.framedSend(s, bytes(cmmdLine, encoding='utf-8'), debug) # send file name or 1st command 
+
+
+    #status
+    status = framedSock.framedReceive(s, debug).decode()
+    if status == 'exit':
         sys.exit(0)
-
     else:
-        print(fileToSend,' --> filePath does not exist')
-        framedSock.framedSend(s, 'exit'.encode(), debug)
-        print('closing system')
-        s.close()
-        sys.exit(1)
-        
-
-
+        print('\nStatus from server: ', status)
+        print('\n')
