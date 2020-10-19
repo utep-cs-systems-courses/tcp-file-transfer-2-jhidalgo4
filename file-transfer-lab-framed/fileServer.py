@@ -4,7 +4,6 @@
 Created on Thur Sep 24 19:00:04 2020
 @author: joaquin
 """
-
 import socket, sys, re, os
 sys.path.append("../lib")
 import params

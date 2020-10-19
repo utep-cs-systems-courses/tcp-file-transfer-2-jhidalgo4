@@ -4,7 +4,6 @@
 Created on Thur Sep 24 19:02:15 2020
 @author: joaquin
 """
-
 import socket, sys, re, os
 sys.path.append("../lib")
 import params
@@ -16,7 +15,6 @@ switchesVarDefaults = (
     (('-d', '--debug'), "debug", False), # boolean (set if present)
     (('-?', '--usage'), "usage", False), # boolean (set if present)
     )
-
 
 progname = "framedClient"
 paramMap = params.parseParams(switchesVarDefaults)
