@@ -1,9 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# #!/usr/bin/env python3
+# # -*- coding: utf-8 -*-
 """
 Created on Thur Sep 24 19:00:04 2020
 @author: joaquin
 """
+
 import socket, sys, re, os
 sys.path.append("../lib")
 import params
@@ -30,7 +31,7 @@ lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # listener socket
 bindAddr = ("127.0.0.1", listenPort)
 lsock.bind(bindAddr)
 lsock.listen(5)
-print('SERVER\n')
+print('Server\n')
 print("listening on:", bindAddr)
 
 while True:
@@ -75,6 +76,3 @@ while True:
             else:
                 print('ERROR: couldnt find file: ', fileName)
                 framedSock.framedSend(sock, bytes('ERROR \nFile doesnt exist', encoding='utf-8'), debug) #
-
-
-

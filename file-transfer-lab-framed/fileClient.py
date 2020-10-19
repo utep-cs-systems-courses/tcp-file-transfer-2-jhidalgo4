@@ -27,6 +27,9 @@ if usage:
 try:
     serverHost, serverPort = re.split(":", server)
     serverPort = int(serverPort)
+    proxySetting = input('run with proxy? ( y / n ) :')
+    if proxySetting == 'y':
+        serverPort = int(50000)
 except:
     print("Can't parse server:port from '%s'" % server)
     sys.exit(1)
@@ -35,8 +38,7 @@ addrFamily = socket.AF_INET
 socktype = socket.SOCK_STREAM
 addrPort = (serverHost, serverPort)
 
-print('CLIENT\n')
-
+print('client\n')
 while True:
     
     s = socket.socket(addrFamily, socktype)
@@ -66,3 +68,4 @@ while True:
     else:
         print('\nStatus from server: ', status)
         print('\n')
+        s.close()
