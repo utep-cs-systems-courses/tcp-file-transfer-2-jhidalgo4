@@ -2,12 +2,14 @@
 
 # -*- coding: utf-8 -*-
 """
-Created on Thur Sep 24 19:00:04 2020
+# Created on Thur Oct 02 12:20:25 2020
 @author: joaquin
 """
 import sys
 sys.path.append("../lib")       # for params
 import re, socket, params, os
+
+DIR = './recieve/'
 
 switchesVarDefaults = (
     (('-l', '--listenPort') ,'listenPort', 50001),
@@ -40,20 +42,39 @@ class Server(Thread):
     def run(self):
         print("new thread handling connection from", self.addr)
         while True:
+            #Recieve
             payload = self.fsock.receive(debug)
-            
-            print('payL--->', payload)
-            #debug
-            if debug: print("rec'd: ", payload)
+            if debug: print(f"thread connected to ((addr var goes here!))done")
             if not payload:     # done
-                if debug: print(f"thread connected to ((addr var goes here!))done")
-                # self.fsock.send(payload, debug)
                 self.fsock.close()
                 return          # exit
             
+            #Decode and echo
             status = payload
-            status += b"!"             # make emphatic!
-            self.fsock.send(status, debug)
+            payload = payload.decode()
+            
+            #exit
+            if 'exit' in payload:
+                sys.exit(0)
+            
+            #write payload
+            if os.path.exists(payload):
+                print('Obtained filename: ', payload )
+                print('writing to file above...')
+                
+                with open(payload, 'rb') as fContext:
+                    readData = fContext.read()
+                
+                with open(DIR+payload, 'wb') as wFile:
+                    wFile.write(readData)
+                
+                #Send
+                print('Done writing to: ', payload )
+                print('\n')
+                self.fsock.send(b'DONE', debug)
+            else:
+                self.fsock.send(b'File does not exist, try gain', debug)
+            
         
 
 while True:

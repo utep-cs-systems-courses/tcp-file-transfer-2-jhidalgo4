@@ -1,7 +1,7 @@
 # #!/usr/bin/env python3
 # # -*- coding: utf-8 -*-
 # """
-# Created on Thur Sep 24 19:02:15 2020
+# Created on Thur Oct 02 12:01:25 2020
 # @author: joaquin
 # """
 
@@ -47,23 +47,21 @@ sock.connect(addrPort)
 
 fsock = EncapFramedSock((sock, addrPort))
 
-###########
 while True:
     #User Input
     userInput = input('Enter here-->:')
-    
+    #exit
     if userInput == 'exit':
         print('exit, goodbye...')
+        fsock.send( bytes('exit', encoding='utf-8'), debug)
         sys.exit(0)
-    
     #Transfer
     print(userInput)
     fsock.send( bytes(userInput, encoding='utf-8'), debug)
     
-    
     #Status recieved
-    status = fsock.receive(debug)
-    print("received:", status )
+    status = fsock.receive(debug).decode()
+    print("Status from Server: ", status )
 
 
 
