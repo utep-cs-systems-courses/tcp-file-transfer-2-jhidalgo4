@@ -49,19 +49,19 @@ fsock = EncapFramedSock((sock, addrPort))
 
 while True:
     #User Input
-    userInput = input('Enter here-->:')
+    userInput = input('Enter here$ ')
     #exit
     if userInput == 'exit':
         print('exit, goodbye...')
         fsock.send( bytes('exit', encoding='utf-8'), debug)
         sys.exit(0)
     #Transfer
-    print(userInput)
+    print('Sending to client: ',userInput)
     fsock.send( bytes(userInput, encoding='utf-8'), debug)
     
     #Status recieved
     status = fsock.receive(debug).decode()
-    print("Status from Server: ", status )
+    print("Status from Server: ", status , '\n')
 
 
 

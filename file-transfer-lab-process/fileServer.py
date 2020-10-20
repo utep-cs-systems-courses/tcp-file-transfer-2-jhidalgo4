@@ -7,7 +7,10 @@
 """
 import sys
 sys.path.append("../lib")       # for params
-import re, socket, params, os
+import re, socket, params, os, threading
+
+from threading import Thread
+from encapFramedSock import EncapFramedSock
 
 DIR = './recieve/'
 
@@ -31,8 +34,7 @@ lsock.bind(bindAddr)
 lsock.listen(5)
 print("listening on:", bindAddr)
 
-from threading import Thread;
-from encapFramedSock import EncapFramedSock
+lock = threading.Lock()
 
 class Server(Thread):
     def __init__(self, sockAddr):
@@ -59,8 +61,9 @@ class Server(Thread):
             
             #write payload
             if os.path.exists(payload):
-                print('Obtained filename: ', payload )
-                print('writing to file above...')
+                lock.acquire()
+                print('\nlocking to write this file: ', payload )
+                print('writing to file..')
                 
                 with open(payload, 'rb') as fContext:
                     readData = fContext.read()
@@ -69,11 +72,12 @@ class Server(Thread):
                     wFile.write(readData)
                 
                 #Send
-                print('Done writing to: ', payload )
-                print('\n')
                 self.fsock.send(b'DONE', debug)
+                print('about to unlock..')
+                lock.release()
+                print('Done writing to: ', payload , '\n')
             else:
-                self.fsock.send(b'File does not exist, try gain', debug)
+                self.fsock.send(b'File does not exist, try again', debug)
             
         
 
