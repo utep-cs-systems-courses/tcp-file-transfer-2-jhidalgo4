@@ -63,4 +63,3 @@ while True:
     status = fsock.receive(debug).decode()
     print("Status from Server: ", status , '\n')
 
-

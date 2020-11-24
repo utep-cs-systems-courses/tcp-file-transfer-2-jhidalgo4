@@ -35,12 +35,26 @@ lsock.listen(5)
 print("listening on:", bindAddr)
 
 lock = threading.Lock()
+filesInUse = dict()
 
+
+def writeToFile(fName):
+    filesInUse.update( {fName:'True'} ) #mark as now in use, do not touch while in use
+    lock.acquire()
+    with open(fName, 'rb') as fContext:
+        readData = fContext.read()
+    with open(DIR+fName, 'wb') as wFile:
+        wFile.write(readData)
+    lock.release()
+    filesInUse.update( {fName:'False'} ) #make open for use
+    
+    
 class Server(Thread):
     def __init__(self, sockAddr):
         Thread.__init__(self)
         self.sock, self.addr = sockAddr
         self.fsock = EncapFramedSock(sockAddr)
+        
     def run(self):
         print("new thread handling connection from", self.addr)
         while True:
@@ -61,30 +75,23 @@ class Server(Thread):
             
             #write payload
             if os.path.exists(payload):
-                lock.acquire()
-                print('\nlocking to write this file: ', payload )
-                print('writing to file..')
-                
-                with open(payload, 'rb') as fContext:
-                    readData = fContext.read()
-                
-                with open(DIR+payload, 'wb') as wFile:
-                    wFile.write(readData)
-                
-                #Send
-                self.fsock.send(b'DONE', debug)
-                print('about to unlock..')
-                lock.release()
-                print('Done writing to: ', payload , '\n')
+                #Check to see if in use
+                if filesInUse.get(payload) == None or filesInUse.get(payload) == 'False':
+                    #pass in the file name
+                    writeToFile(payload)
+                    
+                    #Sent
+                    self.fsock.send(b'DONE', debug)
+                    print('Done writing to: ', payload , '\n')
+                    
+                else:
+                    self.fsock.send(b'File In use, try again', debug)
             else:
                 self.fsock.send(b'File does not exist, try again', debug)
-            
-        
 
 while True:
     sockAddr = lsock.accept()
     server = Server(sockAddr)
     server.start()
-
 
 
