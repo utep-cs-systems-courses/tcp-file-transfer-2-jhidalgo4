@@ -36,24 +36,23 @@ print("listening on:", bindAddr)
 
 lock = threading.Lock()
 filesInUse = dict()
-
-
-def writeToFile(fName):
-    filesInUse.update( {fName:'True'} ) #mark as now in use, do not touch while in use
-    lock.acquire()
-    with open(fName, 'rb') as fContext:
-        readData = fContext.read()
-    with open(DIR+fName, 'wb') as wFile:
-        wFile.write(readData)
-    lock.release()
-    filesInUse.update( {fName:'False'} ) #make open for use
-    
-    
+        
 class Server(Thread):
     def __init__(self, sockAddr):
         Thread.__init__(self)
         self.sock, self.addr = sockAddr
         self.fsock = EncapFramedSock(sockAddr)
+        
+    def writeFile(self, fName):
+        filesInUse.update( {fName:'True'} ) #mark as now in use, do not touch while in use
+        lock.acquire()
+        with open(fName, 'rb') as fContext:
+            readData = fContext.read()
+        with open(DIR+fName, 'wb') as wFile:
+            wFile.write(readData)
+        lock.release()
+        filesInUse.update( {fName:'False'} ) #make open for use
+        
         
     def run(self):
         print("new thread handling connection from", self.addr)
@@ -78,7 +77,7 @@ class Server(Thread):
                 #Check to see if in use
                 if filesInUse.get(payload) == None or filesInUse.get(payload) == 'False':
                     #pass in the file name
-                    writeToFile(payload)
+                    self.writeFile(payload)
                     
                     #Sent
                     self.fsock.send(b'DONE', debug)
